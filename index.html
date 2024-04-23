@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ventilation System Simulation</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    #background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      opacity: 0.5;
+    }
+    #drag-drop-box {
+      width: 200px;
+      height: 200px;
+      border: 2px dashed #ccc;
+      margin: 20px auto;
+    }
+    .draggable {
+      width: 200px;
+      height: 200px;
+      margin: 20px;
+      cursor: pointer;
+      position: absolute;
+    }
+    .draggable img {
+      width: 100%;
+      height: 100%;
+    }
+    .caption {
+      font-size: 14px;
+    }
+    #cerv-img {
+      left: 10px;
+      top: 10px;
+    }
+    #erv-img {
+      right: 10px;
+      top: 10px;
+    }
+    #hrv-img {
+      left: 10px;
+      bottom: 10px;
+    }
+    #no-ventilation-img {
+      right: 10px;
+      bottom: 10px;
+    }
+    #co2-level {
+      font-size: 24px;
+      margin-top: 20px;
+    }
+    #electricity-cost {
+      font-size: 24px;
+      margin-top: 20px;
+    }
+    .gif-container {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 20px;
+    }
+    .gif-container img {
+      width: 100%;
+      height: 250px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Ventilation System Simulation</h1>
+
+  <img id="background" src="background.png" alt="Background">
+
+  <div id="drag-drop-box" ondrop="drop(event)" ondragover="allowDrop(event)">
+    <p>Drag and drop the ventilation system image here</p>
+  </div>
+
+  <div id="cerv-img" class="draggable" draggable="true" ondragstart="drag(event)">
+    <img src="cerv_image.png" alt="CERV">
+    <p class="caption">CERV</p>
+  </div>
+  <div id="erv-img" class="draggable" draggable="true" ondragstart="drag(event)">
+    <img src="erv_image.png" alt="ERV">
+    <p class="caption">ERV</p>
+  </div>
+  <div id="hrv-img" class="draggable" draggable="true" ondragstart="drag(event)">
+    <img src="hrv_image.png" alt="HRV">
+    <p class="caption">HRV</p>
+  </div>
+  <div id="no-ventilation-img" class="draggable" draggable="true" ondragstart="drag(event)">
+    <img src="no_ventilation_image.png" alt="No Ventilation">
+    <p class="caption">No Ventilation</p>
+  </div>
+
+  <p>CO2 ppm: <span id="co2-level">0</span></p>
+  <p>Permissible levels of CO2: 400 - 1000 ppm</p>
+  <p>Electricity Cost per Year ($): <span id="electricity-cost">0</span></p>
+  
+  <div style="display: grid; place-items: center;">
+    <div class="gif-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 50px;">
+      <img id="ventilation-gif" src="" alt="Ventilation GIF">
+      <img id="electricity-gif" src="" alt="Electricity GIF">
+    </div>
+  </div>
+  <script>
+    // Function to update CO2 ppm, electricity cost, and ventilation and electricity GIFs based on ventilation system
+    function updateValues(ventilationSystem) {
+      var co2PPM;
+      var electricityCost;
+      var ventilationGIF;
+      var electricityGIF;
+
+      // Set CO2 ppm, electricity cost, ventilation GIF, and electricity GIF based on the selected ventilation system
+      switch (ventilationSystem) {
+        case 'cerv':
+          co2PPM = 983.9; 
+          electricityCost = 408;
+          ventilationGIF = 'ventilation-cerv.gif';
+          electricityGIF = 'electricty-cerv.gif';
+          break;
+        case 'erv':
+          co2PPM = 665.6; 
+          electricityCost = 3624.48;
+          ventilationGIF = 'ventilation-erv.gif';
+          electricityGIF = 'electricty-erv.gif';
+          break;
+        case 'hrv':
+          co2PPM = 665.6; 
+          electricityCost = 1795.26;
+          ventilationGIF = 'ventilation-hrv.gif';
+          electricityGIF = 'electricty-hrv.gif';
+          break;
+        case 'no-ventilation':
+          co2PPM = 11165.7; 
+          electricityCost = 408;
+          ventilationGIF = 'ventilation-no_ventilation.gif';
+          electricityGIF = 'no_ventilation_electricity.gif';
+          break;
+        default:
+          co2PPM = 0;
+          electricityCost = 0;
+          ventilationGIF = '';
+          electricityGIF = '';
+      }
+
+      // Update the CO2 ppm and electricity cost displayed on the webpage
+      document.getElementById("co2-level").textContent = co2PPM.toFixed(1);
+      document.getElementById("electricity-cost").textContent = electricityCost.toFixed(2);
+      
+      // Update the ventilation and electricity GIFs
+      document.getElementById("ventilation-gif").src = ventilationGIF;
+      document.getElementById("electricity-gif").src = electricityGIF;
+    }
+
+    // Drag and drop functionality
+    document.addEventListener("DOMContentLoaded", function() {
+      const draggableElements = document.querySelectorAll('.draggable img'); // Selecting images instead of the parent divs
+
+      draggableElements.forEach(element => {
+        element.addEventListener('dragstart', function(event) {
+          event.dataTransfer.setData('text/plain', event.target.parentElement.id); // Accessing the parent div's ID
+        });
+      });
+
+      const dropZone = document.getElementById("drag-drop-box");
+
+      dropZone.addEventListener('dragover', function(event) {
+        event.preventDefault();
+      });
+
+      dropZone.addEventListener('drop', function(event) {
+        event.preventDefault();
+        var data = event.dataTransfer.getData('text/plain');
+        var droppedElement = document.getElementById(data);
+        if (droppedElement.classList.contains('draggable')) {
+          updateValues(droppedElement.id.replace('-img', ''));
+        }
+      });
+    });
+  </script>
+</body>
+</html>
